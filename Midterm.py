@@ -1,3 +1,4 @@
+
 def CSUMBy():
   pic = makePicture(pickAFile()) ## use getPic() for testing, and otter? image? or logo, or both?
   for x in range(0,getWidth(pic)):
@@ -26,15 +27,24 @@ def CSUMBy():
         setGreen(p,50)
         setBlue(p,84)
   repaint(pic)
+  #writePictureTo(pic,"/home/nick/Workspaces/GitProjects/CST205 Midterm/CSUMBy.jpg")
+  
 
 def vintageTV(): 
-## use SpeedBoatSmaller.jpg
-## it is the correct resolution to fit into the TV frame
-  pic = makePicture(pickAFile()) 
+## use SpeedBoatSmaller.jpg for first image ##1080x720 image, slightly too long
+## use GreenScreenSmaller.png for second image ## CRT make small enough to take in a 1080x720 image inside it.
+## These are great for the demo using pyCopy not chromakey
+  pic = makePicture(pickAFile())
+  tvFrame = makePicture(pickAFile())
   scanLines(pic)
+  tvFrameX = 300 #300
+  tvFrameY = 145 #145
   #distortImage(pic) ## this function needs to be made still
-  chromakey(pic)
-  repaint(pic)
+  #show(chromakey(pic,tvFrame))
+  
+  demo = pyCopy(pic,tvFrame,tvFrameX,tvFrameY)
+  show(demo)
+  #writePictureTo(demo,"/home/nick/Workspaces/GitProjects/CST205 Midterm/Vintage.jpg")
   
 def scanLines(pic):## introduces scanlines into the image
   for x in range(0,getWidth(pic)):
@@ -53,25 +63,39 @@ def darkenColor(pixel):
 
 #def distortImage(): ## introduces bending on edges of image
 
-def chromakey(pic): 
+def pyCopy(source, target, targetX, targetY):
+  sWidth = getWidth(source)
+  sHeight = getHeight(source)
+  tWidth = getWidth(target)
+  tHeight = getHeight(target)
+  
+  for x in range(0, sWidth):
+    for y in range(0, sHeight):
+      oldPix = getPixel(source, x, y)
+      newX = x + targetX
+      newY = y + targetY
+      #this will allow me to have some of the photos leave the frame a little bit without crashing
+      if (newX < tWidth) and (newX >= 0) and (newY < tHeight) and (newY >= 0):
+        newPix = getPixel(target, newX, newY)
+        setColor(newPix, getColor(oldPix))
+  return target
+
+def chromakey(pic,tvFrame): 
   ## for use of Vintage TV to be put into the greenScreen CRT
   crtImage = pic
-  tvFrame = makePicture(pickAFile())
+  tvFrame = tvFrame
   ##GreemScreenCRT green area is around 900x700 in size
   ##use provided image of TV screen 
   pixelsFrame = getPixels(tvFrame)
   pixelsImage = getPixels(crtImage)
-  for pixel in pixelsFrame: 
+  for pixel in pixelsImage: 
     r = pixel.getRed()
     b = pixel.getBlue()
     g = pixel.getGreen()
     redBlueAvg = (r+b)/2.0
-    if (g > (redBlueAvg)*2.0):
-      p = getPixel(crtImage, 10 ,10)
-      ## issues with the size of the crtImage on the TvFrame
-      ## attempting debugging with green.png provided.
-      ## perhaps image is going out of bounds?
-      setColor(pixel, getColor(p))
+    if (g > (redBlueAvg)*2.5):
+      p = getPixel(tvFrame, 0 ,0)
+      setColor(p, getColor(p))
   return tvFrame
   
   
