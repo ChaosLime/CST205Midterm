@@ -1,36 +1,66 @@
-def CSUMBy():
+## Midterm Project -- CST 205
+## Group Members:
+## Mitchell Saunders
+## Nicholas Saunders
+
+def CSUMBy(): ##Call function to get CSUMBized photo
   #call custom function to setMediaPath() to same folder level as this file.
   setMediaPathToCurrentDir()
-  pic = makePicture(pickAFile()) ## use getPic() for testing, and otter? image? or logo, or both?
-  for x in range(0, getWidth(pic)):
-    for y in range(0, getHeight(pic)):
-      p = getPixel(pic, x, y)
-      r = getRed(p)
-      g = getGreen(p)
-      b = getBlue(p)
-      if(r >= 170 and g >=170 and b >= 170): ##Bay Blue r:10 g:50 b:84 
-      #range of color is 170 or greater
-        setRed(p, 10)
-        setGreen(p, 50)
-        setBlue(p, 84)
-      elif(r >= 85 and g >= 85 and b >= 85): ##Valley Green r:67 g:107 b:92
-      #range of color is 85 to 169 
-        setRed(p, 67)
-        setGreen(p, 107)
-        setBlue(p, 92)
-      elif(r < 85 and g < 85 and b < 85):##Golden Sand r:147 g:127 b:85
-      #range of color is strictly less than 85 
-        setRed(p, 147)
-        setGreen(p, 127)
-        setBlue(p, 85)
-      else: ## any pixels that are not in the ranges, set to Bay Blue
-        setRed(p, 10)
-        setGreen(p, 50)
-        setBlue(p, 84)
-  repaint(pic)
+  pic = makePicture(pickAFile())
+  artified= artify(pic)
+  ##adding text
+  textStyle = makeStyle(serif, bold, 50)
+  addTextWithStyle(artified, 50, 100, "Go Otters!", textStyle, white)
+  textStyle = makeStyle(serif, bold, 50)
+  addTextWithStyle(artified, getWidth(artified)-300, getHeight(artified)-50, "CSUMB", textStyle, white)
   
-  writePictureTo(pic, getMediaPath() + "CSUMBy.png")
+  show(artified)  
+  #writePictureTo(pic, getMediaPath() + "CSUMBy.png")
   
+def artify(pic):
+  pixels = getPixels(pic)
+  for pixel in pixels:
+    setRed(pixel, changeColor(pixel.getRed(),"red"))
+    setGreen(pixel, changeColor(pixel.getGreen(),"green"))
+    setBlue(pixel, changeColor(pixel.getBlue(),"blue"))
+  return(pic)  
+    	
+def changeColor(colorValue,type): 
+## issues with output colors, have 3 colors that are close to colors wanted, but still gets painted.
+##Bay Blue r:10 g:50 b:84
+##Valley Green r:67 g:107 b:92
+##Golden Sand r:147 g:127 b:85
+  if(type == "red"):#Red value check
+    if (colorValue >= 0) and (colorValue <= 85):##Bay Blue
+      colorValue = 10
+    if (colorValue > 85) and (colorValue <= 170):##Valley Green
+      colorValue = 67
+    if (colorValue > 170) and (colorValue <= 255):##Golden Sand
+      colorValue = 147
+    return(colorValue)
+    
+  if(type == "green"):#Green value check
+    if (colorValue >= 0) and (colorValue <= 85):##Bay Blue
+      colorValue = 50
+    if (colorValue > 85) and (colorValue <= 170):##Valley Green
+      colorValue = 107
+    if (colorValue > 170) and (colorValue <= 255):##Golden Sand
+      colorValue = 127
+    return(colorValue)
+    
+  if(type == "blue"):#Blue value check
+    if (colorValue >= 0) and (colorValue <= 85):##Bay Blue
+      colorValue = 84
+    if (colorValue > 85) and (colorValue <= 170):##Valley Green
+      colorValue = 92
+    if (colorValue > 170) and (colorValue <= 255):##Golden Sand
+      colorValue = 85
+    return(colorValue)
+  else:
+    return 0
+
+
+###Retro TV function starts here
 
 def vintageTV(): 
 ## use SpeedBoatSmaller.jpg for first image ##1080x720 image, slightly too long
@@ -70,7 +100,8 @@ def darkenColor(pixel):
   setColor(pixel, new_pixColor)
   return pixel
 
-#def distortImage(): ## introduces bending on edges of image
+#def distortEdges(): ## introduces bending on edges of image
+#def fuzzyEffect(): ## intrduces a fuzz to the image
 
 def pyCopy(source, target, targetX, targetY):
   sWidth = getWidth(source)
