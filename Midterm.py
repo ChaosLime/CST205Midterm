@@ -63,46 +63,107 @@ def changeColor(colorValue,type):
 ###Retro TV function starts here
 
 def vintageTV(): 
-## use SpeedBoatSmaller.jpg for first image ##1080x720 image, slightly too long
-## use GreenScreenSmaller.png for second image ## CRT make small enough to take in a 1080x720 image inside it.
-## These are great for the demo using pyCopy not chromakey
   setMediaPathToCurrentDir()
-  #hard coded image that we want to use for now.
-  pic = makePicture(getMediaPath() + "SpeedBoatSmaller.jpg")
-  #pic = makePicture(pickAFile())
+  #pic = makePicture(getMediaPath() + "FullSpeedBoat.jpg")
+  pic = makePicture(pickAFile())
   
-  #Removed selection of TVFrame because that will be a fixed feature of our vintage function
-  #tvFrame = makePicture(pickAFile())
-  
-  pic = addScanLines(pic)
-  tvFrameX = 300 #300
-  tvFrameY = 145 #145
-  #distortImage(pic) ## this function needs to be made still
-    
-  pic = xferImageToCRT(pic)
+  pic = changeContrastAndBrightness(pic, 1.5, 20)
+  pic = rgbShift(pic)
+  #choose from the following two functions which one more looks like a CRT
+  pic = addScanLines(pic) #changed to put a scanline every other row
+  #pic = splitRGB(pic)
 
   repaint(pic)
   
   writePictureTo(pic, getMediaPath() + "Vintage.png")
-  
-def addScanLines(pic):## introduces scanlines into the image
+
+def changeContrastAndBrightness(pic, contrastAmount, brightnessAmount):
+  #if desired contrast and brightness are desired to be left alone...
+  #contrastAmount = 1 and brightnessAmount = 0
   for x in range(0, getWidth(pic)):
-    for y in range(0, getHeight(pic), 4): 
-    # the 4 step draws a scan line every 4 lines horizontally
+    for y in range(0, getHeight(pic)):
+      p = getPixel(pic, x, y)
+      r = getRed(p)
+      g = getGreen(p)
+      b = getBlue(p)
+      
+      nr = contrastAmount * (r - 128) + 128 + brightnessAmount
+      ng = contrastAmount * (g - 128) + 128 + brightnessAmount
+      nb = contrastAmount * (b - 128) + 128 + brightnessAmount
+      
+      if nr > 255:
+        nr = 255
+      elif nr < 0:
+        nr = 0
+      if ng > 255:
+        ng = 255
+      elif ng < 0:
+        ng = 0
+      if nb > 255:
+        nb = 255
+      elif nb < 0:
+        nb = 0
+      
+      newColor = makeColor(nr, ng, nb)
+      setColor(p, newColor)
+  return pic
+
+#use this or splitRGB  
+def addScanLines(pic):
+  for x in range(0, getWidth(pic)):
+    for y in range(0, getHeight(pic), 2):      
+      #the 2 step draws a scan line every 2 lines horizontally
       darkenColor(getPixel(pic, x, y))
   return pic
 
+#use this or addScanlines  
+def splitRGB(pic):## CRT-ify image
+  for x in range(0, getWidth(pic)):
+    for y in range(0, getHeight(pic)): 
+      p = getPixel(pic, x, y)
+      r = getRed(p)
+      g = getGreen(p)
+      b = getBlue(p)
+      if y % 3 == 0:
+        setColor(p, makeColor(r, 0, 0))
+      elif (y + 1) % 3 == 0:
+        setColor(p, makeColor(0 ,g, 0))
+      elif (y + 2) % 3 == 0:
+        setColor(p, makeColor(0, 0, b))
+  return pic
+  
+def rgbShift(pic):## cause green to move to the right, and blue to the left
+  shiftAmount = 2
+  canvas = makeEmptyPicture(getWidth(pic), getHeight(pic))
+  for x in range(0, getWidth(pic)):
+    for y in range(0, getHeight(pic)): 
+      destPix = getPixel(canvas, x, y)
+      cp = getPixel(pic, x, y)
+      r = getRed(cp)
+      
+      if x - shiftAmount >= 0:
+        lp = getPixel(pic, x - shiftAmount, y)
+        b = getBlue(lp)
+      else:
+        b = getBlue(cp)
+      
+      if x + shiftAmount < getWidth(pic):
+        rp = getPixel(pic, x + shiftAmount, y)
+        g = getGreen(rp)
+      else:
+        g = getGreen(cp)
+
+      setColor(destPix, makeColor(r, g, b))
+  return canvas
+
 def darkenColor(pixel):
   pixColor = getColor(pixel)
-  new_pixColor = makeDarker(makeDarker(pixColor))
+  new_pixColor = makeDarker(makeDarker(makeDarker(pixColor)))
   #implemented makeDarker three times to be sure lines where very distinct.
   #better way to do this?
   setColor(pixel, new_pixColor)
   return pixel
-
-#def distortEdges(): ## introduces bending on edges of image
-#def fuzzyEffect(): ## intrduces a fuzz to the image
-
+  
 def pyCopy(source, target, targetX, targetY):
   sWidth = getWidth(source)
   sHeight = getHeight(source)
@@ -120,6 +181,89 @@ def pyCopy(source, target, targetX, targetY):
         setColor(newPix, getColor(oldPix))
   return target
 
+#to allow mediaPath to be correct an linux, macos and windows.
+def setMediaPathToCurrentDir():
+  fullPathToFile = os.path.abspath(__file__)
+  if fullPathToFile.startswith('/'):
+    setMediaPath(os.path.dirname(fullPathToFile))
+  else:
+    setMediaPath(os.path.dirname(fullPathToFile) + '\\')
+
+
+
+
+#The section below is old code that can be removed before submitting
+####=============================================
+####=============================================
+####=============================================
+####=============================================
+
+#abandoned - Remove before submitting
+def splitImageIntoRGB(pic):
+  canvas = makeEmptyPicture(getWidth(pic), getHeight(pic)*3, black)
+  for x in range(0, getWidth(pic)):
+    for y in range(0, getHeight(pic) - 3, 3):
+      op1 = getPixel(pic, x, y + 0)
+      op2 = getPixel(pic, x, y + 1)
+      op3 = getPixel(pic, x, y + 2)
+      np1 = getPixel(canvas, x, (y*3) + 0)
+      np2 = getPixel(canvas, x, (y*3) + 1)
+      np3 = getPixel(canvas, x, (y*3) + 2)
+      
+      color1 = getColor(op1)
+      color2 = getColor(op2)
+      color3 = getColor(op3)
+      
+      setColor(np1, color1)
+      setColor(np2, color2)
+      setColor(np3, color3) 
+      
+      # the 4 step draws a scan line every 4 lines horizontally
+      #darkenColor(getPixel(pic, x, y))
+  return canvas
+
+#abandoned - Remove before submitting
+def betterSplitImageIntoRGB(pic):
+  canvas = makeEmptyPicture(getWidth(pic), getHeight(pic)*3, black)
+  for x in range(0, getWidth(pic)):
+    for y in range(0, getHeight(pic) - 3):
+      op1 = getPixel(pic, x, y + 0)
+      np1 = getPixel(canvas, x, (y*3) + 0)
+      
+      color1 = getColor(op1)
+      color2 = getColor(op2)
+      color3 = getColor(op3)
+      
+      setColor(np1, color1)
+      setColor(np2, color2)
+      setColor(np3, color3) 
+      
+      # the 4 step draws a scan line every 4 lines horizontally
+      #darkenColor(getPixel(pic, x, y))
+  return canvas
+
+#abandoned - remove before submitting
+def betterSplitRGB(pic):
+  canvas = makeEmptyPicture(getWidth(pic)*3, getHeight(pic))
+  for x in range(0, getWidth(pic)-1):
+    for y in range(0, getHeight(pic)):
+      p = getPixel(pic, x, y)
+      newPixR = getPixel(canvas, (x*3) + 0, y)
+      newPixG = getPixel(canvas, (x*3) + 1, y)
+      newPixB = getPixel(canvas, (x*3) + 2, y)
+      rCol = makeColor(getRed(p), 0, 0)
+      gCol = makeColor(0, getGreen(p), 0)
+      bCol = makeColor(0, 0, getBlue(p))
+      
+      setColor(newPixR, rCol)
+      setColor(newPixG, gCol)
+      setColor(newPixB, bCol) 
+      
+      # the 4 step draws a scan line every 4 lines horizontally
+      #darkenColor(getPixel(pic, x, y))
+  return canvas
+  
+#abandoned - remove before submitting
 def xferImageToCRT(pic):
   #Requirements:
   #Image must be at least 945x720 in order to fill the greenscreen
@@ -158,12 +302,4 @@ def xferImageToCRT(pic):
         if g > 200 and r < 150 and b < 150:
           setColor(framePix, newColor)
       
-  return tvFrame
-  
-#to allow mediaPath to be correct an linux, macos and windows.
-def setMediaPathToCurrentDir():
-  fullPathToFile = os.path.abspath(__file__)
-  if fullPathToFile.startswith('/'):
-    setMediaPath(os.path.dirname(fullPathToFile))
-  else:
-    setMediaPath(os.path.dirname(fullPathToFile) + '\\')  
+  return tvFrame  
