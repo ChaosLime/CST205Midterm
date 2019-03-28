@@ -68,9 +68,9 @@ def vintageTV():
   pic = makePicture(pickAFile())
   
   pic = changeContrastAndBrightness(pic, 1.5, 20)
-  pic = rgbShift(pic)
+  pic = rgbShift(pic, 3)
   #choose from the following two functions which one more looks like a CRT
-  pic = addScanLines(pic) #changed to put a scanline every other row
+  pic = addScanLines(pic, 4)
   #pic = splitRGB(pic)
 
   repaint(pic)
@@ -109,9 +109,9 @@ def changeContrastAndBrightness(pic, contrastAmount, brightnessAmount):
   return pic
 
 #use this or splitRGB  
-def addScanLines(pic):
+def addScanLines(pic, everyXrows):
   for x in range(0, getWidth(pic)):
-    for y in range(0, getHeight(pic), 2):      
+    for y in range(0, getHeight(pic), everyXrows):      
       #the 2 step draws a scan line every 2 lines horizontally
       darkenColor(getPixel(pic, x, y))
   return pic
@@ -132,8 +132,7 @@ def splitRGB(pic):## CRT-ify image
         setColor(p, makeColor(0, 0, b))
   return pic
   
-def rgbShift(pic):## cause green to move to the right, and blue to the left
-  shiftAmount = 2
+def rgbShift(pic, shiftAmount):## cause green to move to the right, and blue to the left
   canvas = makeEmptyPicture(getWidth(pic), getHeight(pic))
   for x in range(0, getWidth(pic)):
     for y in range(0, getHeight(pic)): 
@@ -158,7 +157,7 @@ def rgbShift(pic):## cause green to move to the right, and blue to the left
 
 def darkenColor(pixel):
   pixColor = getColor(pixel)
-  new_pixColor = makeDarker(makeDarker(makeDarker(pixColor)))
+  new_pixColor = makeDarker(makeDarker(makeDarker(makeDarker(pixColor))))
   #implemented makeDarker three times to be sure lines where very distinct.
   #better way to do this?
   setColor(pixel, new_pixColor)
