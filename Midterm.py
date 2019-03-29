@@ -7,15 +7,14 @@ def CSUMBy(): ##Call function to get CSUMBized photo
   #call custom function to setMediaPath() to same folder level as this file.
   setMediaPathToCurrentDir()
   pic = makePicture(pickAFile())
+  logo = makePicture(getMediaPath() + "csumb-logo.png")
   artified= artify(pic)
   ##adding text
-  textStyle = makeStyle(serif, bold, 50)
-  addTextWithStyle(artified, 50, 100, "Go Otters!", textStyle, white)
-  textStyle = makeStyle(serif, bold, 50)
-  addTextWithStyle(artified, getWidth(artified)-300, getHeight(artified)-50, "CSUMB", textStyle, white)
-  
-  show(artified)  
-  #writePictureTo(pic, getMediaPath() + "CSUMBy.png")
+  textStyle = makeStyle(serif, bold, 100)
+  addTextWithStyle(artified, 25, 100, "Go Otters!", textStyle, white)
+  ##Adds Logo
+  show(pyCopyIgnoreColor(logo,artified,getWidth(pic)-860,getHeight(pic)-250,makeColor(32,255,20)))
+  writePictureTo(pic, getMediaPath() + "CSUMBy.png")
   
 def artify(pic):
   pixels = getPixels(pic)
@@ -26,7 +25,6 @@ def artify(pic):
   return(pic)  
     	
 def changeColor(colorValue,type): 
-## issues with output colors, have 3 colors that are close to colors wanted, but still gets painted.
 ##Bay Blue r:10 g:50 b:84
 ##Valley Green r:67 g:107 b:92
 ##Golden Sand r:147 g:127 b:85
@@ -58,6 +56,26 @@ def changeColor(colorValue,type):
     return(colorValue)
   else:
     return 0
+
+def pyCopyIgnoreColor(source, target, targetX, targetY, colorToIgnore):
+  sWidth = getWidth(source)
+  sHeight = getHeight(source)
+  tWidth = getWidth(target)
+  tHeight = getHeight(target)
+  
+  for x in range(0, sWidth):
+    for y in range(0, sHeight):
+      oldPix = getPixel(source, x, y)
+      newX = x + targetX
+      newY = y + targetY
+      #this will allow me to have some of the photos leave the frame a little bit without crashing
+      if (newX < tWidth) and (newX >= 0) and (newY < tHeight) and (newY >= 0):
+        if getColor(oldPix) != colorToIgnore:
+          newPix = getPixel(target, newX, newY)
+          setColor(newPix, getColor(oldPix))
+  return target    
+            
+
 
 
 ###Retro TV function starts here
