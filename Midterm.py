@@ -3,10 +3,14 @@
 ## Mitchell Saunders
 ## Nicholas Saunders
 
+### CSUMBy function starts here ###
+
 def CSUMBy(): ##Call function to get CSUMBized photo
-  #call custom function to setMediaPath() to same folder level as this file.
+  #call custom function to setMediaPath() to same folder level as this file, makes sure it works on Windows, macos, and linux platforms.
   setMediaPathToCurrentDir()
-  pic = makePicture(pickAFile())
+  
+  pic = makePicture(getMediaPath() + "Playful_Otter.jpg")
+  #pic = makePicture(pickAFile())
   logo = makePicture(getMediaPath() + "csumb-logo.png")
   artified= artify(pic)
   ##adding text
@@ -14,7 +18,8 @@ def CSUMBy(): ##Call function to get CSUMBized photo
   addTextWithStyle(artified, 25, 100, "Go Otters!", textStyle, white)
   ##Adds Logo
   show(pyCopyIgnoreColor(logo,artified,getWidth(pic)-860,getHeight(pic)-250,makeColor(32,255,20)))
-  writePictureTo(pic, getMediaPath() + "CSUMBy.png")
+  
+  #writePictureTo(pic, getMediaPath() + "CSUMBy.png")
   
 def artify(pic):
   pixels = getPixels(pic)
@@ -74,11 +79,8 @@ def pyCopyIgnoreColor(source, target, targetX, targetY, colorToIgnore):
           newPix = getPixel(target, newX, newY)
           setColor(newPix, getColor(oldPix))
   return target    
-            
 
-
-
-###Retro TV function starts here
+### Retro TV function starts here ###
 
 def vintageTV(): 
   setMediaPathToCurrentDir()
@@ -207,116 +209,3 @@ def setMediaPathToCurrentDir():
     setMediaPath(os.path.dirname(fullPathToFile) + '\\')
 
 
-
-
-#The section below is old code that can be removed before submitting
-####=============================================
-####=============================================
-####=============================================
-####=============================================
-
-#abandoned - Remove before submitting
-def splitImageIntoRGB(pic):
-  canvas = makeEmptyPicture(getWidth(pic), getHeight(pic)*3, black)
-  for x in range(0, getWidth(pic)):
-    for y in range(0, getHeight(pic) - 3, 3):
-      op1 = getPixel(pic, x, y + 0)
-      op2 = getPixel(pic, x, y + 1)
-      op3 = getPixel(pic, x, y + 2)
-      np1 = getPixel(canvas, x, (y*3) + 0)
-      np2 = getPixel(canvas, x, (y*3) + 1)
-      np3 = getPixel(canvas, x, (y*3) + 2)
-      
-      color1 = getColor(op1)
-      color2 = getColor(op2)
-      color3 = getColor(op3)
-      
-      setColor(np1, color1)
-      setColor(np2, color2)
-      setColor(np3, color3) 
-      
-      # the 4 step draws a scan line every 4 lines horizontally
-      #darkenColor(getPixel(pic, x, y))
-  return canvas
-
-#abandoned - Remove before submitting
-def betterSplitImageIntoRGB(pic):
-  canvas = makeEmptyPicture(getWidth(pic), getHeight(pic)*3, black)
-  for x in range(0, getWidth(pic)):
-    for y in range(0, getHeight(pic) - 3):
-      op1 = getPixel(pic, x, y + 0)
-      np1 = getPixel(canvas, x, (y*3) + 0)
-      
-      color1 = getColor(op1)
-      color2 = getColor(op2)
-      color3 = getColor(op3)
-      
-      setColor(np1, color1)
-      setColor(np2, color2)
-      setColor(np3, color3) 
-      
-      # the 4 step draws a scan line every 4 lines horizontally
-      #darkenColor(getPixel(pic, x, y))
-  return canvas
-
-#abandoned - remove before submitting
-def betterSplitRGB(pic):
-  canvas = makeEmptyPicture(getWidth(pic)*3, getHeight(pic))
-  for x in range(0, getWidth(pic)-1):
-    for y in range(0, getHeight(pic)):
-      p = getPixel(pic, x, y)
-      newPixR = getPixel(canvas, (x*3) + 0, y)
-      newPixG = getPixel(canvas, (x*3) + 1, y)
-      newPixB = getPixel(canvas, (x*3) + 2, y)
-      rCol = makeColor(getRed(p), 0, 0)
-      gCol = makeColor(0, getGreen(p), 0)
-      bCol = makeColor(0, 0, getBlue(p))
-      
-      setColor(newPixR, rCol)
-      setColor(newPixG, gCol)
-      setColor(newPixB, bCol) 
-      
-      # the 4 step draws a scan line every 4 lines horizontally
-      #darkenColor(getPixel(pic, x, y))
-  return canvas
-  
-#abandoned - remove before submitting
-def xferImageToCRT(pic):
-  #Requirements:
-  #Image must be at least 945x720 in order to fill the greenscreen
-  
-  #hard coded the image that we will be using because this function is designed
-  #around the features and sizes of the tvFrame that is listed below.
-  tvFrame = makePicture(getMediaPath() + "GreenScreenCRTsmallerWMoreGreen.png")
-  #upper left corner of small image (350,142)
-  frameOriginX = 350
-  frameOriginY = 142
-  frameWidth = 945
-  frameHeight = 725
-  picWidth = getWidth(pic)
-  picHeight = getHeight(pic)
-  
-  #create x and y offsets to locate the pic in the center of the tvFrame
-  xOffset = frameOriginX + (frameWidth // 2) - (picWidth // 2)
-  yOffset = frameOriginY + (frameHeight // 2) - (picHeight // 2)
-  
-  for x in range(0, frameOriginX + frameWidth):
-    for y in range(0, frameOriginY + frameHeight):
-      #moved bounds check out of if statement because it was too long
-      inBoundsOfPic = (x < picWidth) and (x >= 0) and (y < picHeight) and (y >= 0)
-      inBoundsOfTvFrame = (x + xOffset < getWidth(tvFrame)) and (x + xOffset >= 0) and \
-                          (y + yOffset < getHeight(tvFrame)) and (y + yOffset >= 0)
-      #this will check to make sure that the program is in bounds of pic and the tvFrame.
-      if inBoundsOfPic and inBoundsOfTvFrame:
-        pix = getPixel(pic, x, y)
-        framePix = getPixel(tvFrame, x + xOffset, y + yOffset)
-        r = getRed(framePix)
-        g = getGreen(framePix)
-        b = getBlue(framePix)
-        newColor = getColor(pix)
-        
-        #create loose green color rule and use that to replace green in frame with the image
-        if g > 200 and r < 150 and b < 150:
-          setColor(framePix, newColor)
-      
-  return tvFrame  
